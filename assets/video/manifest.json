@@ -1,0 +1,38 @@
+{
+  "vs": {
+    "codec_name": "h264",
+    "width": 320,
+    "height": 192,
+    "r_frame_rate": "35/4",
+    "duration": "16.800000",
+    "nb_read_frames": "147",
+    "sha256": "0439a333d5858b9f83531a38f727f11da1ba0181c264a263fdd4a34cfc1c7fa4"
+  },
+  "alex": {
+    "codec_name": "h264",
+    "width": 320,
+    "height": 192,
+    "r_frame_rate": "35/4",
+    "duration": "4.914286",
+    "nb_read_frames": "43",
+    "sha256": "0a82988ec944f571b3a50ab457edb7bafde7f6b6f433cf7f451237a90fca0a94"
+  },
+  "paranoid": {
+    "codec_name": "h264",
+    "width": 320,
+    "height": 192,
+    "r_frame_rate": "35/4",
+    "duration": "3.428571",
+    "nb_read_frames": "30",
+    "sha256": "63251228978236106b6ef53e42a04fd35f3f6eeb021c5b7d0462d1d044ee703b"
+  },
+  "harl": {
+    "codec_name": "h264",
+    "width": 320,
+    "height": 192,
+    "r_frame_rate": "35/3",
+    "duration": "17.142857",
+    "nb_read_frames": "200",
+    "sha256": "d0c65f1f345fc912bc38a54b9688900e052427fb182b5711d6dade2bb4cd862d"
+  }
+}

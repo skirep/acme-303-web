@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{scenes,sceneAt,DURATION}from'../timeline.js';
+test('timeline covers the entire track without gaps or overlaps',()=>{assert.equal(scenes[0].start,0);assert.equal(scenes.at(-1).end,DURATION);for(let i=0;i<scenes.length;i++){assert.ok(scenes[i].end>scenes[i].start);if(i)assert.equal(scenes[i-1].end,scenes[i].start);}});
+test('seeking chooses the right scene at every boundary',()=>{for(const s of scenes){assert.equal(sceneAt(s.start).index,s.index);assert.equal(sceneAt(s.end-.001).index,s.index);}assert.equal(sceneAt(DURATION).index,scenes.at(-1).index);});

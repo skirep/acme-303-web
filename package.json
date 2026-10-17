@@ -1,0 +1,1 @@
+{"name":"acme-303-web","version":"1.0.0","private":true,"type":"module","description":"Unofficial native Three.js reconstruction of ACME 303","scripts":{"dev":"python3 -m http.server 8000","test":"node --test tests/*.test.js","check":"node --check main.js && node --check shaders.js && node --check timeline.js"}}

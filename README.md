@@ -6,7 +6,7 @@ A native, real-time **Three.js / WebGL 2** reconstruction of **303 by ACME (1997
 
 ## Run
 
-Run `npm run dev` (Python 3 required), then open http://localhost:8000. No npm dependencies or build step. All runtime assets, including Three.js 0.180.0, are local. GitHub Pages serves the repository root from `main`.
+Run `npm run dev` (Python 3 required), then open http://localhost:8000. No npm dependencies or build step. A low-resolution Canvas 2D fallback is available when WebGL cannot initialize, including software projection of the Three.js meshes. All runtime assets, including Three.js 0.180.0, are local. GitHub Pages serves the repository root from `main`.
 
 Press **Iniciar demo** to unlock browser audio. Space pauses; left/right seek five seconds; M mutes; F enters fullscreen. Chapters allow seeking. Resolution can be changed while running. Mobile touch controls are provided below the 4:3 canvas.
 

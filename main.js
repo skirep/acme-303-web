@@ -2,10 +2,20 @@ import * as THREE from 'three';
 import {MarchingCubes} from './vendor/MarchingCubes.js';
 import {SoftwareRenderer} from './fallback.js';
 import {vertex,fragment} from './shaders.js';
-import {scenes,sceneAt,DURATION} from './timeline.js';
+import {scenes,sceneAt,DURATION} from './timeline.js?v=3';
 const $=s=>document.querySelector(s),canvas=$('#screen'),overlay=$('#overlay'),ctx=overlay.getContext('2d');
 let renderer,software=null,ready=false,started=false,current=-1,last=0,clock=0;
-const audio=new Audio('./assets/music.ogg');audio.preload='auto';
+const audio=new Audio('./assets/soundtrack.ogg');audio.preload='auto';
+const videos=Object.fromEntries(['harl','vs','alex','paranoid'].map(name=>{const v=document.createElement('video');v.src=`./assets/video/${name}.mp4`;v.preload='auto';v.muted=true;v.playsInline=true;v.hidden=true;v.setAttribute('aria-label',`Vídeo original ${name.toUpperCase()}`);$('#stage').append(v);return [name,v];}));
+let activeVideo=null;
+function syncFootage(s,t){
+ const v=s.video?videos[s.video]:null;
+ if(activeVideo!==v){if(activeVideo){activeVideo.pause();activeVideo.hidden=true;}activeVideo=v;}
+ if(!v)return;v.hidden=false;v.style.opacity=uniforms.fade.value;
+ const desired=((t-s.start)%(v.duration||1));
+ if(!v.seeking&&Math.abs(v.currentTime-desired)>.12)v.currentTime=desired;
+ if(audio.paused){if(!v.paused)v.pause();}else if(v.paused&&!v.seeking)v.play().catch(()=>{});
+}
 const textures={},loader=new THREE.TextureLoader();
 const uniforms={map:{value:null},time:{value:0},local:{value:0},mode:{value:0},fade:{value:1},resolution:{value:new THREE.Vector2(640,480)}};
 const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
@@ -25,9 +35,9 @@ function text(value,x,y,size=46,color='#e8e7ed',align='center'){
 function drawOverlay(s,t){ctx.clearRect(0,0,640,480);let l=t-s.start;
  if(s.index===0){ctx.globalAlpha=Math.min(1,l/3)*Math.min(1,(16-l)/2);text('ACME',320,205,66);text('303',320,313,142);ctx.globalAlpha=1;}
  if(s.name==='CREDITS'){const rows=[['STATIX','CODE'],['AAP','GRAPHICS & DESIGN'],['VIC','MUSIC']];const row=rows[Math.floor(l/5)%3];text(row[0],320,235,70);text(row[1],320,280,18,'#bfbdcb');}
- if(s.index===5){text('ACME',320+Math.sin(l)*35,250,100,'#d7e5db');}
- if(s.index===8){text('303',320,270,Math.min(220,70+l*10));}
- if(s.index===14){ctx.fillStyle='#03010699';ctx.fillRect(0,0,640,480);text('303',320,215,130);text('ACME',320,275,42);text('VIC + STATIX + AAP',320,343,22);text('X’97  /  THANK YOU',320,380,15);}
+ if(s.name==='LINE FX'){text('ACME',320+Math.sin(l)*35,250,100,'#d7e5db');}
+ if(s.name==='GRID ZOOM'){text('303',320,270,Math.min(220,70+l*10));}
+ if(s.name==='FINALPART'){ctx.fillStyle='#03010699';ctx.fillRect(0,0,640,480);text('303',320,215,130);text('ACME',320,275,42);text('VIC + STATIX + AAP',320,343,22);text('X’97  /  THANK YOU',320,380,15);}
  if(t>DURATION-3){ctx.fillStyle=`rgba(0,0,0,${(t-DURATION+3)/3})`;ctx.fillRect(0,0,640,480);}
 }
 function render(t){const s=sceneAt(t);if(s.index!==current){current=s.index;uniforms.map.value=textures[s.texture];$('#scene-name').textContent=`${String(s.index+1).padStart(2,'0')} / ${s.name}`;document.body.dataset.scene=s.name;}
@@ -39,7 +49,7 @@ function render(t){const s=sceneAt(t);if(s.index!==current){current=s.index;unif
  if(blobs.visible){blobs.reset();for(let i=0;i<6;i++){const a=i*1.0472+t*.6;blobs.addBall(.5+Math.sin(a)*.21,.5+Math.cos(a*1.3)*.20,.5+Math.sin(a*.7)*.21,.55,12);}blobs.update();blobs.rotation.set(t*.15,t*.23,0);}
  if(software)software.mesh(spikey.visible?spikey:blobs,cam3,THREE);else{renderer.autoClear=false;renderer.clearDepth();renderer.render(objects,cam3);}
  }
- drawOverlay(s,t);
+ drawOverlay(s,t);syncFootage(s,t);
  $('#seek').value=t;$('#clock').textContent=`${format(t)} / 04:05`;
 }
 function format(t){return `${Math.floor(t/60).toString().padStart(2,'0')}:${Math.floor(t%60).toString().padStart(2,'0')}`;}
@@ -57,6 +67,7 @@ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();audio.pause();
 try{
  try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.LinearSRGBColorSpace;}catch{software=new SoftwareRenderer(canvas);renderer=software;document.body.dataset.renderer='software';}resolution();
  await Promise.all([...new Set(scenes.map(s=>s.texture))].map(async n=>{const tex=await loader.loadAsync(`./assets/${n}.png`);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.magFilter=THREE.LinearFilter;textures[n]=tex;}));
+ await Promise.all(Object.values(videos).map(v=>new Promise((resolve,reject)=>{if(v.readyState>=1)return resolve();v.addEventListener('loadedmetadata',resolve,{once:true});v.addEventListener('error',()=>reject(new Error('Video load failed: '+v.src)),{once:true});v.load();})));
  await new Promise((resolve,reject)=>{if(audio.readyState>=2)return resolve();audio.addEventListener('loadeddata',resolve,{once:true});audio.addEventListener('error',reject,{once:true});audio.load();});
  ready=true;render(0);$('#status').textContent=software?'Mode compatible Canvas 2D. Recursos preparats.':'Recursos preparats. Puja el volum.';$('#start').disabled=false;
 }catch(e){console.error(e);fail('No s’ha pogut carregar la demo. Comprova la connexió i que el navegador admeti WebGL 2.');}
